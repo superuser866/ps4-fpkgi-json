@@ -5,7 +5,9 @@ The script uses official OpenOrbis Docker container (openorbisofficial/toolchain
 It recursively scans the input directory for .pkg files, then it extracts all the needed informations, the cover png and creates in the same directory the three jsons
 
 GAMES.json
+
 UPDATES.json
+
 DLC.json
 
 Then it reads the jsons searching for the files on the filesystem and removes invalid records.
@@ -18,6 +20,7 @@ For example:
   so the commands will be:
 
   cd /nfs/PS4/Games/ 
+  
   ./ps4-fpkgi-json.sh http://test.lan/PS4/
 
 If for any reason the script crashes with container running, you may have to issue the command "docker stop openorbis" to stop and remove it).
