@@ -26,6 +26,16 @@ For example:
 If for any reason the script crashes with container running, you may have to issue the command "docker stop openorbis" to stop and remove it).
 If for any reason one of the JSONs becomes corrupted, you will have to delete it or the script will fail to read and write it. 
 
+**Requirements**:
+- docker
+- jq (to work with json files)
+
+**Fixes**
+- Fixed Version extraction, previously it reported everytime 01.00
+- Fixed Cover extraction, previously was extracting background image instead of icon
+- Added Region extraction
+- Added "DATA" node to the jsons to improve compatibilty with FPKGi versions
+
 Feel free to use it and/or improve it!
 
 Cheers!
