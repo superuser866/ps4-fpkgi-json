@@ -135,7 +135,7 @@ while read -r pkg; do
 
     param_sfo_index=$(docker exec "$CONTAINER_NAME" grep "PARAM_SFO" /workspace/tmpfile1 | awk '{print $4}')
     #echo "PARAM_SFO index: $param_sfo_index"
-    
+
     sfo_file="/workspace/${pkg_name}.sfo"
     docker exec "$CONTAINER_NAME" /lib/OpenOrbisSDK/bin/linux/PkgTool.Core pkg_extractentry "/workspace/$pkg_name" "$param_sfo_index" "$sfo_file"
     #echo "SFO extracted for $pkg_name."
@@ -143,14 +143,14 @@ while read -r pkg; do
     docker exec "$CONTAINER_NAME" /lib/OpenOrbisSDK/bin/linux/PkgTool.Core sfo_listentries "$sfo_file" > ./tmpfile
     #echo "Lista entries SFO ottenuta."
 
-    category=$(docker exec "$CONTAINER_NAME" grep "CATEGORY" /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
-    title_id=$(docker exec "$CONTAINER_NAME" grep "TITLE_ID" /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
-    title=$(docker exec "$CONTAINER_NAME" grep "TITLE " /workspace/tmpfile | awk -F'=' '{print $2}' | sed 's/^ *//;s/ *$//')    
-    version=$(docker exec "$CONTAINER_NAME" grep "APP_VER" /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
-    release_tmp=$(docker exec "$CONTAINER_NAME" grep "PUBTOOLINFO" /workspace/tmpfile | grep -o "c_date=[0-9]*" | cut -d'=' -f2)
+    category=$(docker exec "$CONTAINER_NAME" grep "^CATEGORY " /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
+    title_id=$(docker exec "$CONTAINER_NAME" grep "^TITLE_ID " /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
+    title=$(docker exec "$CONTAINER_NAME" grep "^TITLE " /workspace/tmpfile | awk -F'=' '{print $2}' | sed 's/^ *//;s/ *$//')    
+    version=$(docker exec "$CONTAINER_NAME" grep "^APP_VER " /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
+    release_tmp=$(docker exec "$CONTAINER_NAME" grep "^PUBTOOLINFO " /workspace/tmpfile | grep -o "c_date=[0-9]*" | cut -d'=' -f2)
     release=$(echo "$release_tmp" | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\2-\3-\1/')
     size=$(stat -c %s "$pkg")
-    content_id=$(docker exec "$CONTAINER_NAME" grep "CONTENT_ID" /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
+    content_id=$(docker exec "$CONTAINER_NAME" grep "^CONTENT_ID " /workspace/tmpfile | awk -F'=' '{print $2}' | tr -d ' ')
     region="${content_id:0:1}"
     	if [[ "$region" == "J" ]]; then 
 		region="JAP"
@@ -165,15 +165,16 @@ while read -r pkg; do
     cover_url="$SERVER_URL"
     cover_url+="_img/$title_id.png"
     pkg_url="$SERVER_URL$pkg_name"
-	if [[ -e "./_img/$title_id.PNG" ]]; then
+	if [[ -e "./_img/$title_id.png" ]]; then
 	    coverexists=1
 	else
 	    coverexists=0
-	    pic1_index=$(docker exec "$CONTAINER_NAME" grep 'ICON0_PNG' /workspace/tmpfile1 | awk '{print $4}')
-	    #echo "pic1_index: $pic1_index"
+	    icon0_index=$(docker exec "$CONTAINER_NAME" grep 'ICON0_PNG' /workspace/tmpfile1 | awk '{print $4}')
+	    #echo "icon0_index: $icon0_index"
+	    
 	    # If ICON0 is empty, try PIC0
-	    if [[ -z "$pic1_index" ]]; then
-	        pic1_index=$(docker exec "$CONTAINER_NAME" grep 'PIC0_PNG' /workspace/tmpfile1 | awk '{print $4}')
+	    if [[ -z "$icon0_index" ]]; then
+	        icon0_index=$(docker exec "$CONTAINER_NAME" grep 'PIC0_PNG' /workspace/tmpfile1 | awk '{print $4}')
 	    fi
 	fi
 
@@ -187,8 +188,8 @@ while read -r pkg; do
         "gd") 
 	    echo "CATEGORY: GAME"            
 	    if [[ $coverexists -eq 0 ]]; then
-  		docker exec "$CONTAINER_NAME" /lib/OpenOrbisSDK/bin/linux/PkgTool.Core pkg_extractentry "/workspace/$pkg_name" "$pic1_index" "/workspace/_img/$title_id.PNG"
-            	#echo "Extracted cover .$IMG_SUBDIR/$title_id.PNG"
+  		docker exec "$CONTAINER_NAME" /lib/OpenOrbisSDK/bin/linux/PkgTool.Core pkg_extractentry "/workspace/$pkg_name" "$icon0_index" "/workspace/_img/$title_id.png"
+            	#echo "Extracted cover .$IMG_SUBDIR/$title_id.png"
             fi
 	    update_json "$JSON_GAMES" "$pkg_url" "$json_entry"
 	    cGames=$((cGames + 1))
