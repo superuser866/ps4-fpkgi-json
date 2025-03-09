@@ -35,6 +35,7 @@ If for any reason one of the JSONs becomes corrupted, you will have to delete it
 - Fixed Cover extraction, previously was extracting background image instead of icon
 - Added Region extraction
 - Added "DATA" node to the jsons to improve compatibilty with FPKGi versions
+- Fixed extension of cover files
 
 Feel free to use it and/or improve it!
 
