@@ -40,7 +40,7 @@ If for any reason one of the JSONs becomes corrupted, you will have to delete it
 # fpkgi-service-monitor.sh
 
 You can use this batch to automatically update fpkgi json files when you put a new .pkg in the Games directory.
-The service monitor uses inotifywait to check when you put a new .pkg file in the Game directory and creates a temporary file.
+The service monitor uses inotifywait to check the directory and then creates a temporary file.
 The updater searches the temporary file and if found it triggers the json update after the eventual GRACE_PERIOD (in seconds, just to allow eventual transfer to complete). 
 
 1) Put the tho .sh files in one directory for example /opt/fpkgi-updater
