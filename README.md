@@ -37,6 +37,45 @@ If for any reason one of the JSONs becomes corrupted, you will have to delete it
 - Added "DATA" node to the jsons to improve compatibilty with FPKGi versions
 - Fixed extension of cover files
 
+# fpkgi-service-monitor.sh
+
+You can use this batch to automatically update fpkgi json files when you put a new .pkg in the Games directory.
+The service monitor uses inotifywait to check when you put a new .pkg file in the Game directory and creates a temporary file.
+The updater searches the temporary file and if found it triggers the json update after the eventual GRACE_PERIOD (in seconds, just to allow eventual transfer to complete). 
+
+1) Put the tho .sh files in one directory for example /opt/fpkgi-updater
+2) Edit configuration in the first line of the fpkgi-service-monitor.sh:
+   
+   #Directory to monitor
+   
+   MONITOR_DIR="/nfs/PS4/Games"
+
+   #Check file to verify successful mount
+   
+   CHECK_FILE="$MONITOR_DIR/mount.chk" 
+
+4) Create the CHECK_FILE (es.: touch /nfs/PS4/Games/mount.chk")
+
+5) Edit configuration in the first line of the fpkgi-update-json.sh
+
+   UPDATE_URL="http://odin.lan/PS4/"
+
+   MONITOR_DIR="/nfs/PS4/Games"
+
+   GRACE_PERIOD=60
+
+7) Schedule the service monitor at boot time:
+
+   #FPKGI SERVICE MONITOR
+
+   @reboot /opt/fpkgi-service-monitor.sh >> /opt/fpkgi-service-monitor.log 2>&1
+
+8) Schedule the updater every X minutes as you wish
+
+   #FPKGI UPDATE JSON ON REQUEST
+
+   */1 * * * * /opt/fpkgi-update-json.sh >> /opt/fpkgi-update-json.log 2>&1
+
 Feel free to use it and/or improve it!
 
 Cheers!
