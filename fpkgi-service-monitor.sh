@@ -1,21 +1,20 @@
 #!/bin/bash
 
-# Cartella da monitorare
+# Directory to monitor
 MONITOR_DIR="/nfs/PS4/Games"
+# Check file to verify successful mount
+CHECK_FILE="$MONITOR_DIR/mount.chk"  
 
-CHECK_FILE="$MONITOR_DIR/mount.chk"  # File di controllo per verificare il mount
-
-# File di richiesta per aggiornamento
+# Request file
 UPDATE_REQUEST_FILE="/tmp/fpkgi_update_request"
 
-# Funzione per stampare messaggi con timestamp
+# Print message with timestamp
 echo_ts() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
-# Funzione per verificare il montaggio
+# Function to verify mount
 check_mount() {
-	# Verifica se il file di controllo esiste
 	if [ -f "$CHECK_FILE" ]; then
 	    echo_ts "Mount check file found."
 	else
@@ -30,15 +29,16 @@ check_mount() {
 
 check_mount
 
-# Usa inotifywait per monitorare la cartella ricorsivamente
+# Use inotifywait to recursively monitor directory 
 inotifywait -m -r -e create --format "%w%f" "$MONITOR_DIR" | while read FILE
 do
-    # Verifica estensione del file
+    # Verify file extension
     FILE_LOWER=$(echo "$FILE" | tr '[:upper:]' '[:lower:]')
     
     if [[ "$FILE_LOWER" =~ \.(pkg)$ ]]; then
-        # Crea o aggiorna il file di richiesta con il timestamp corrente
-        echo_ts "Setting XML update request for: $FILE"
+        # Create or update request file with timestamp
+        echo_ts "Setting update request for: $FILE"
         echo "$(date +%s)" > "$UPDATE_REQUEST_FILE"
     fi
 done
+
