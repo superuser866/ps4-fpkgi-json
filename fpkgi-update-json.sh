@@ -2,6 +2,8 @@
 
 UPDATE_URL="http://odin.lan/PS4/"
 MONITOR_DIR="/nfs/PS4/Games"
+#How many seconds to wait (in order to allow pkg transfer to complete) 
+GRACE_PERIOD=0
 
 # File update request
 UPDATE_REQUEST_FILE="/tmp/fpkgi_update_request"
@@ -31,8 +33,11 @@ if [ -f "$UPDATE_REQUEST_FILE" ]; then
 
     # Delete request file
     rm -f "$UPDATE_REQUEST_FILE"
-    echo_ts "File di richiesta aggiornamento json cancellato."
+    echo_ts "Request file deleted."
 
+    echo_ts "Waiting the grace period of $GRACE_PERIOD seconds..."
+    sleep $GRACE_PERIOD
+    
     # Update json
     echo_ts "Updating json..."
     cd $MONITOR_DIR
