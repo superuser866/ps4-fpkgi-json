@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Directory to monitor
-MONITOR_DIR="/nfs/PS4/Games"
+MONITOR_DIR="/nfs/PS4/Games" 
 # Check file to verify successful mount
 CHECK_FILE="$MONITOR_DIR/mount.chk"  
-
+# Check interval in seconds
+INTERVAL=60
+EXT=".pkg"
 # Request file
 UPDATE_REQUEST_FILE="/tmp/fpkgi_update_request"
 
@@ -21,7 +23,8 @@ check_mount() {
 	    echo_ts "Mount check file not found. Wating 60 seconds..."
 	    sleep 60
 	    echo_ts "Mounting $MONITOR_DIR ..."
-	    mount $MONITOR_DIR
+	    #mount $MONITOR_DIR
+	    mount /nfs/PS4
 	fi
 }
 
@@ -29,16 +32,30 @@ check_mount() {
 
 check_mount
 
-# Use inotifywait to recursively monitor directory 
-inotifywait -m -r -e create --format "%w%f" "$MONITOR_DIR" | while read FILE
-do
-    # Verify file extension
-    FILE_LOWER=$(echo "$FILE" | tr '[:upper:]' '[:lower:]')
-    
-    if [[ "$FILE_LOWER" =~ \.(pkg)$ ]]; then
-        # Create or update request file with timestamp
-        echo_ts "Setting update request for: $FILE"
-        echo "$(date +%s)" > "$UPDATE_REQUEST_FILE"
-    fi
-done
+# Array of current pkg files
+declare -A SEEN_FILES
 
+echo_ts "Monitoring $MONITOR_DIR for new *$EXT files (interval: ${INTERVAL}s)..."
+
+# First pass to load the current list
+while IFS= read -r -d '' file; do
+    if [[ -z "${SEEN_FILES["$file"]}" ]]; then
+        SEEN_FILES["$file"]=1
+    fi
+done < <(find "$MONITOR_DIR" -type f -name "*$EXT" -print0)
+
+echo_ts "Current list loaded. Starting monitoring..."
+
+while true; do
+    # find .pkg, save in temp array
+    while IFS= read -r -d '' file; do
+        if [[ -z "${SEEN_FILES["$file"]}" ]]; then
+            echo_ts "New file: $file"
+            SEEN_FILES["$file"]=1
+            echo_ts "Setting update request for: $file"
+            echo "$(date +%s)" > "$UPDATE_REQUEST_FILE"
+
+	fi
+    done < <(find "$MONITOR_DIR" -type f -name "*$EXT" -print0)
+    sleep "$INTERVAL"
+done
